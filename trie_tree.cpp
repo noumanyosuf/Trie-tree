@@ -20,83 +20,94 @@ class Trie
 			endOfWord=false;	
 		}
 };
-Trie *root;
 
-void insert(string word)
+class TrieTree
 {
-	Trie *current=root;
-	for(int i=0;i<word.length();i++)
+	Trie *root;
+	public:
+		TrieTree()
+		{
+			root=new Trie;
+		}
+	void insert(string word)
 	{
-		Trie *node=current->children[word[i]];
+		Trie *current=root;
+		for(int i=0;i<word.length();i++)
+		{
+			Trie *node=current->children[word[i]];
+			if(!node)
+			{
+				node=new Trie;
+				current->children[word[i]]=node;
+			}
+			current=node;
+		}
+		current->endOfWord=true;
+	}
+	void insertRecursive(Trie *current,string word,int index=0)
+	{
+		if(word.length()==index-1)
+		{
+			current->endOfWord=true;
+			return;
+		}
+		Trie *node=current->children[word[index]];
 		if(!node)
 		{
 			node=new Trie;
-			current->children[word[i]]=node;
+			current->children[word[index]]=node;
 		}
-		current=node;
+		insertRecursive(node,word,index+1);
 	}
-	current->endOfWord=true;
-}
-void insertRecursive(Trie *current,string word,int index=0)
-{
-	if(word.length()==index-1)
+	
+	bool search(string word)
 	{
-		current->endOfWord=true;
-		return;
-	}
-	Trie *node=current->children[word[index]];
-	if(!node)
-	{
-		node=new Trie;
-		current->children[word[index]]=node;
-	}
-	insertRecursive(node,word,index+1);
-}
-
-bool search(string word)
-{
-	Trie *current=root;
-	for(int i=0;i<word.length();i++)
-	{
-		Trie *node=current->children[word[i]];
-		if(!node)
+		Trie *current=root;
+		for(int i=0;i<word.length();i++)
 		{
-			return false;
+			Trie *node=current->children[word[i]];
+			if(!node)
+			{
+				return false;
+			}
+			current=node;
 		}
-		current=node;
+		return current->endOfWord;
 	}
-	return current->endOfWord;
-}
-
-bool deleteTrie(Trie *current,string word,int index)
-{
-	if(index==word.length())
+	void deleteTrieTree(string word)
 	{
-		if(!current->endOfWord)return false;
-		current->endOfWord=false;
-		return current->children.size() == 0;
+		deleteTrie(root,word,0);
 	}
-	Trie *node=current->children[word[index]];
-	if(!node)return false;
-	
-	bool deleteCurrentNode;
-	deleteCurrentNode=deleteTrie(node,word,index+1);
-	
-	if(deleteCurrentNode)
+	bool deleteTrie(Trie *current,string word,int index)
 	{
-		delete node;
-		current->children.erase(word[index]);
-		return current->children.size() == 0;
+		if(index==word.length())
+		{
+			if(!current->endOfWord)return false;
+			current->endOfWord=false;
+			return current->children.size() == 0;
+		}
+		Trie *node=current->children[word[index]];
+		if(!node)return false;
+		
+		bool deleteCurrentNode;
+		deleteCurrentNode=deleteTrie(node,word,index+1);
+		
+		if(deleteCurrentNode)
+		{
+			delete node;
+			current->children.erase(word[index]);
+			return current->children.size() == 0;
+		}
+		return false;
 	}
-	return false;
-}
+};
 
 int main()
 {
-	root=new Trie;
+	TrieTree tree;
 	cout<<boolalpha;
-	insert("hello");
-	cout<<search("hello")<<endl;
-	deleteTrie(root,"hello",0);
-	cout<<search("hello")<<endl;	
+	tree.insert("hello");
+	cout<<tree.search("hello")<<endl;
+	tree.deleteTrieTree("hello");
+	cout<<tree.search("hello")<<endl;	
 } 
